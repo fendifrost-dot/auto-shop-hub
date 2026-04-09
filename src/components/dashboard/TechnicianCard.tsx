@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Star, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Star, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
 
 interface TechnicianCardProps {
   name: string;
