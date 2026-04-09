@@ -14,9 +14,9 @@ export function useDashboardStats() {
     queryKey: ["dashboard_stats"],
     queryFn: async (): Promise<DashboardStats> => {
       const [jobsRes, profilesRes, revenueRes] = await Promise.all([
-        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
-        supabase.from("revenue_entries").select("*").order("period_end", { ascending: false }).limit(12),
+        (supabase.from as any)("jobs").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
+        (supabase.from as any)("profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
+        (supabase.from as any)("revenue_entries").select("*").order("period_end", { ascending: false }).limit(12),
       ]);
 
       if (jobsRes.error) throw jobsRes.error;
@@ -27,8 +27,8 @@ export function useDashboardStats() {
 
       const pick = (type: "daily" | "weekly" | "monthly") => {
         const candidates = rows
-          .filter((r) => r.period_type === type)
-          .sort((a, b) => new Date(b.period_end).getTime() - new Date(a.period_end).getTime());
+          .filter((r: any) => r.period_type === type)
+          .sort((a: any, b: any) => new Date(b.period_end).getTime() - new Date(a.period_end).getTime());
         const hit = candidates[0];
         if (!hit) return null;
         return {

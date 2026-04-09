@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Database } from "@/integrations/supabase/types";
 
-type TimeEntry = Database["public"]["Tables"]["time_entries"]["Row"];
-type JobTimeEntry = Database["public"]["Tables"]["job_time_entries"]["Row"];
-type Job = Database["public"]["Tables"]["jobs"]["Row"];
-type IdleCategory = Database["public"]["Enums"]["idle_category"];
+type TimeEntry = any;
+type JobTimeEntry = any;
+type Job = any;
+export type IdleCategory = "cleanup" | "meeting" | "waiting_parts" | "training" | "break" | "other";
 
 export function useTimeClock() {
   const { user } = useAuth();
@@ -17,8 +16,7 @@ export function useTimeClock() {
     queryKey: ["time_clock", "active_shift", uid],
     enabled: !!uid,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("time_entries")
+      const { data, error } = await (supabase.from as any)("time_entries")
         .select("*")
         .eq("user_id", uid!)
         .is("clock_out", null)
@@ -36,8 +34,7 @@ export function useTimeClock() {
     enabled: !!activeShiftQuery.data?.id,
     queryFn: async () => {
       const shiftId = activeShiftQuery.data!.id;
-      const { data: slice, error } = await supabase
-        .from("job_time_entries")
+      const { data: slice, error } = await (supabase.from as any)("job_time_entries")
         .select("*")
         .eq("time_entry_id", shiftId)
         .is("end_time", null)
@@ -50,12 +47,12 @@ export function useTimeClock() {
 
       let job: Job | null = null;
       if (slice.job_id) {
-        const { data: jobRow, error: jobErr } = await supabase.from("jobs").select("*").eq("id", slice.job_id).single();
+        const { data: jobRow, error: jobErr } = await (supabase.from as any)("jobs").select("*").eq("id", slice.job_id).single();
         if (jobErr) throw jobErr;
-        job = jobRow as Job;
+        job = jobRow;
       }
 
-      return { ...(slice as JobTimeEntry), jobs: job } as JobTimeEntry & { jobs: Job | null };
+      return { ...slice, jobs: job };
     },
   });
 
@@ -63,8 +60,7 @@ export function useTimeClock() {
     queryKey: ["time_clock", "jobs_picklist", uid],
     enabled: !!uid,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("jobs")
+      const { data, error } = await (supabase.from as any)("jobs")
         .select("*")
         .in("status", ["pending", "in_progress"])
         .order("created_at", { ascending: false })
@@ -81,12 +77,8 @@ export function useTimeClock() {
 
   const clockIn = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase
-        .from("time_entries")
-        .insert({
-          user_id: uid!,
-          status: "active",
-        })
+      const { data, error } = await (supabase.from as any)("time_entries")
+        .insert({ user_id: uid!, status: "active" })
         .select()
         .single();
 
@@ -100,21 +92,15 @@ export function useTimeClock() {
     mutationFn: async (timeEntryId: string) => {
       const now = new Date().toISOString();
 
-      const { error: sliceErr } = await supabase
-        .from("job_time_entries")
+      const { error: sliceErr } = await (supabase.from as any)("job_time_entries")
         .update({ end_time: now, updated_at: now })
         .eq("time_entry_id", timeEntryId)
         .is("end_time", null);
 
       if (sliceErr) throw sliceErr;
 
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          clock_out: now,
-          status: "completed",
-          updated_at: now,
-        })
+      const { error } = await (supabase.from as any)("time_entries")
+        .update({ clock_out: now, status: "completed", updated_at: now })
         .eq("id", timeEntryId);
 
       if (error) throw error;
@@ -126,15 +112,14 @@ export function useTimeClock() {
     mutationFn: async (payload: { timeEntryId: string; jobId: string }) => {
       const now = new Date().toISOString();
 
-      const { error: closeErr } = await supabase
-        .from("job_time_entries")
+      const { error: closeErr } = await (supabase.from as any)("job_time_entries")
         .update({ end_time: now, updated_at: now })
         .eq("time_entry_id", payload.timeEntryId)
         .is("end_time", null);
 
       if (closeErr) throw closeErr;
 
-      const { error } = await supabase.from("job_time_entries").insert({
+      const { error } = await (supabase.from as any)("job_time_entries").insert({
         time_entry_id: payload.timeEntryId,
         user_id: uid!,
         job_id: payload.jobId,
@@ -151,15 +136,14 @@ export function useTimeClock() {
     mutationFn: async (payload: { timeEntryId: string; category: IdleCategory }) => {
       const now = new Date().toISOString();
 
-      const { error: closeErr } = await supabase
-        .from("job_time_entries")
+      const { error: closeErr } = await (supabase.from as any)("job_time_entries")
         .update({ end_time: now, updated_at: now })
         .eq("time_entry_id", payload.timeEntryId)
         .is("end_time", null);
 
       if (closeErr) throw closeErr;
 
-      const { error } = await supabase.from("job_time_entries").insert({
+      const { error } = await (supabase.from as any)("job_time_entries").insert({
         time_entry_id: payload.timeEntryId,
         user_id: uid!,
         job_id: null,

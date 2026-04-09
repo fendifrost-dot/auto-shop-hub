@@ -9,17 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AppRole } from "@/hooks/useUserRoles";
 
-type ProfileRow = {
-  user_id: string;
-  full_name: string;
-  email: string | null;
-};
-
-type RoleRow = {
-  user_id: string;
-  role: AppRole;
-  id: string;
-};
+type ProfileRow = { user_id: string; full_name: string; email: string | null };
+type RoleRow = { user_id: string; role: AppRole; id: string };
 
 const ROLE_OPTIONS: { value: AppRole; label: string }[] = [
   { value: "mechanic", label: "Mechanic" },
@@ -33,7 +24,7 @@ export default function Settings() {
   const profilesQuery = useQuery({
     queryKey: ["settings_profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("user_id, full_name, email").order("full_name");
+      const { data, error } = await (supabase.from as any)("profiles").select("user_id, full_name, email").order("full_name");
       if (error) throw error;
       return (data ?? []) as ProfileRow[];
     },
@@ -42,7 +33,7 @@ export default function Settings() {
   const rolesQuery = useQuery({
     queryKey: ["settings_roles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("id, user_id, role");
+      const { data, error } = await (supabase.from as any)("user_roles").select("id, user_id, role");
       if (error) throw error;
       return (data ?? []) as RoleRow[];
     },
@@ -56,7 +47,7 @@ export default function Settings() {
 
   const addRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
+      const { error } = await (supabase.from as any)("user_roles").insert({ user_id: userId, role });
       if (error) throw error;
     },
     onSuccess: async () => {
@@ -69,7 +60,7 @@ export default function Settings() {
 
   const removeRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+      const { error } = await (supabase.from as any)("user_roles").delete().eq("user_id", userId).eq("role", role);
       if (error) throw error;
     },
     onSuccess: async () => {
@@ -91,28 +82,17 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Roles
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> Roles</CardTitle>
           <CardDescription>Admins only. New signups stay on the access-pending screen until a role is added.</CardDescription>
         </CardHeader>
         <CardContent>
           {profilesQuery.isLoading || rolesQuery.isLoading ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading…
-            </div>
+            <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Person</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Current roles</TableHead>
-                    <TableHead className="w-[220px]">Add role</TableHead>
-                  </TableRow>
+                  <TableRow><TableHead>Person</TableHead><TableHead>Email</TableHead><TableHead>Current roles</TableHead><TableHead className="w-[220px]">Add role</TableHead></TableRow>
                 </TableHeader>
                 <TableBody>
                   {(profilesQuery.data ?? []).map((p) => {
@@ -128,15 +108,8 @@ export default function Settings() {
                               <span className="text-muted-foreground text-sm">None</span>
                             ) : (
                               current.map((r) => (
-                                <Button
-                                  key={r}
-                                  type="button"
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-7"
-                                  onClick={() => void removeRole.mutateAsync({ userId: p.user_id, role: r })}
-                                  disabled={removeRole.isPending}
-                                >
+                                <Button key={r} type="button" variant="secondary" size="sm" className="h-7"
+                                  onClick={() => void removeRole.mutateAsync({ userId: p.user_id, role: r })} disabled={removeRole.isPending}>
                                   {r} ✕
                                 </Button>
                               ))
@@ -145,35 +118,22 @@ export default function Settings() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Select
-                              value={addValue}
-                              onValueChange={(v) => setPendingAdd((s) => ({ ...s, [p.user_id]: v as AppRole }))}
-                            >
-                              <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pick role" />
-                              </SelectTrigger>
+                            <Select value={addValue} onValueChange={(v) => setPendingAdd((s) => ({ ...s, [p.user_id]: v as AppRole }))}>
+                              <SelectTrigger className="h-9"><SelectValue placeholder="Pick role" /></SelectTrigger>
                               <SelectContent>
                                 {ROLE_OPTIONS.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value} disabled={current.includes(opt.value)}>
-                                    {opt.label}
-                                  </SelectItem>
+                                  <SelectItem key={opt.value} value={opt.value} disabled={current.includes(opt.value)}>{opt.label}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={!addValue || addRole.isPending}
+                            <Button type="button" size="sm" disabled={!addValue || addRole.isPending}
                               onClick={() => {
                                 const role = pendingAdd[p.user_id] as AppRole;
                                 if (!role) return;
                                 void addRole.mutateAsync({ userId: p.user_id, role }).then(() => {
                                   setPendingAdd((s) => ({ ...s, [p.user_id]: "" }));
                                 });
-                              }}
-                            >
-                              Add
-                            </Button>
+                              }}>Add</Button>
                           </div>
                         </TableCell>
                       </TableRow>
