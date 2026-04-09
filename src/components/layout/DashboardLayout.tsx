@@ -15,7 +15,7 @@ export function DashboardLayout({ children, currentPath }: DashboardLayoutProps)
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar currentPath={path} />
       <main className="flex-1 overflow-auto">
-        <div className="p-4 sm:p-8 pb-24 sm:pb-8">{children ?? <Outlet />}</div>
+        <div className="p-4 sm:p-6 lg:p-8 pb-24 sm:pb-8 max-w-[1600px]">{children ?? <Outlet />}</div>
       </main>
     </div>
   );

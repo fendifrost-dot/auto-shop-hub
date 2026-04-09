@@ -88,36 +88,37 @@ export function TechnicianCard({
         {getStatusBadge()}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Jobs</span>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider">Jobs</span>
           </div>
-          <p className="text-xl font-bold">{jobsCompleted}</p>
-        </div>
-        
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Hours</span>
-          </div>
-          <p className="text-xl font-bold">{hoursWorked}h</p>
+          <p className="text-lg font-bold">{jobsCompleted}</p>
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Star className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Efficiency</span>
+        <div>
+          <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider">Hours</span>
           </div>
-          <p className={cn("text-xl font-bold", getEfficiencyColor())}>{efficiency}%</p>
+          <p className="text-lg font-bold">{hoursWorked}h</p>
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="text-xs uppercase tracking-wider">Revenue</span>
+        <div>
+          <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+            <Star className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider">Efficiency</span>
           </div>
-          <p className="text-xl font-bold text-primary">{formatCurrency(revenue)}</p>
+          <p className={cn("text-lg font-bold", getEfficiencyColor())}>{efficiency}%</p>
+        </div>
+
+        <div>
+          <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+            <DollarSign className="w-3.5 h-3.5" />
+            <span className="text-[11px] uppercase tracking-wider">Revenue</span>
+          </div>
+          <p className="text-lg font-bold text-primary">{formatCurrency(revenue)}</p>
         </div>
       </div>
     </div>
