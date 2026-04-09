@@ -46,25 +46,28 @@ export function MetricCard({
     return "text-muted-foreground";
   };
 
+  // Hide trend section if value is exactly 0 (placeholder)
+  const showTrend = trend && trend.value !== 0;
+
   return (
     <div className={cn("metric-card", variantStyles[variant], className)}>
-      <div className="flex items-start justify-between mb-3">
-        <span className="stat-label">{title}</span>
+      <div className="flex items-start justify-between mb-2">
+        <span className="stat-label text-xs">{title}</span>
         {icon && (
-          <div className="p-2 rounded-lg bg-muted">
+          <div className="p-1.5 rounded-lg bg-muted shrink-0">
             {icon}
           </div>
         )}
       </div>
-      
-      <div className="space-y-1">
-        <p className="stat-value">{value}</p>
+
+      <div className="space-y-0.5">
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</p>
         {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{subtitle}</p>
         )}
       </div>
 
-      {trend && (
+      {showTrend && (
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
           {getTrendIcon()}
           <span className={cn("text-sm font-medium", getTrendColor())}>
